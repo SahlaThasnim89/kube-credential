@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  issuance-service:
+    build: ./issuance-service
+    container_name: issuance-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./issuance-service/data/issuance.db:/app/data/issuance.db
+    environment:
+      - NODE_ENV=production
+
+  verification-service:
+    build: ./verification-service
+    container_name: verification-service
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./verification-service/data/verification.db:/app/data/verification.db
+    environment:
+      - NODE_ENV=production
