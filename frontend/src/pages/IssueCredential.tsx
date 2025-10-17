@@ -6,7 +6,6 @@ import { toast } from "sonner";
 
 const IssueCredential: React.FC = () => {
   const [form, setForm] = useState({ name: "", email: "" });
-  const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [credential, setCredential] = useState<any>(null);
   const [worker, setWorker] = useState<string>("");
@@ -43,7 +42,6 @@ const IssueCredential: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
-    setResult(null);
     setCredential(null);
 
     try {
