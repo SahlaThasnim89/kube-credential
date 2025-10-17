@@ -46,7 +46,7 @@ const IssueCredential: React.FC = () => {
 
     try {
       const res = await issueCredential(form);
-      console.log(res);
+      console.log(res.credential);
 
       if (res.status === "issued") {
         toast.success(res.message || "Credential issued successfully!");
