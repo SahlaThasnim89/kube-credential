@@ -65,16 +65,26 @@ const IssueCredential: React.FC = () => {
     } catch (err: any) {
       const errData = err.response?.data;
 
-      if (errData?.status === "email_conflict") {
-        toast.warning(
-          errData.message ||
-            "A credential with this email already exists under a different name."
-        );
-      } else if (errData?.message) {
-        toast.error(errData.message);
-      } else {
-        toast.error("Failed to issue credential. Please try again.");
-      }
+        if (errData?.status === "email_conflict") {
+    toast.warning(errData.message);
+    // optionally show card
+    setCredential(errData.credential);
+    setWorker(errData.worker || errData.existing?.worker);
+  } else if (errData?.status === "exists") {
+    toast.warning(errData.message);
+    // show existing credential card
+    setCredential(errData.credential);
+    setWorker(errData.worker || errData.existing?.worker);
+  } else if (errData?.message) {
+    toast.error(errData.message);
+  } else {
+    toast.error("Failed to issue credential. Please try again.");
+  }
+      // } else if (errData?.message) {
+      //   toast.error(errData.message);
+      // } else {
+      //   toast.error("Failed to issue credential. Please try again.");
+      // }
     } finally {
       setLoading(false);
     }
