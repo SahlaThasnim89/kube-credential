@@ -48,17 +48,13 @@ const IssueCredential: React.FC = () => {
 
     try {
       const res = await issueCredential(form);
+      console.log(res);
 
       if (res.status === "issued") {
         toast.success(res.message || "Credential issued successfully!");
       } else if (res.status === "exists") {
         toast.warning(
           res.message || "Credential already exists for this name and email!"
-        );
-      } else if (res.status === "email_conflict") {
-        toast.warning(
-          res.message ||
-            "A credential with this email already exists under a different name"
         );
       } else {
         toast.info(res.message || "Unknown response from server");
@@ -69,10 +65,18 @@ const IssueCredential: React.FC = () => {
         setWorker(res.worker || res.existing?.worker);
       }
     } catch (err: any) {
-      toast.error(
-        err.response?.data?.error ||
-          "Failed to issue credential. Please try again."
-      );
+      const errData = err.response?.data;
+
+      if (errData?.status === "email_conflict") {
+        toast.warning(
+          errData.message ||
+            "A credential with this email already exists under a different name."
+        );
+      } else if (errData?.message) {
+        toast.error(errData.message);
+      } else {
+        toast.error("Failed to issue credential. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

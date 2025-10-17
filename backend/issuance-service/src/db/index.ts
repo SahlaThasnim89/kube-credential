@@ -1,11 +1,19 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import dotenv from "dotenv";
 
 let db: Database.Database;
 
+dotenv.config({
+  path: process.env.NODE_ENV === "test" ? ".env.test" : ".env",
+});
+
 export const initializeDB = () => {
-  const dbPath = process.env.DB_PATH || path.join(__dirname, '../../data/issuance.db');
+  const dbPath = process.env.DB_PATH
+  ? process.env.DB_PATH
+  : path.join(__dirname, "../../data/issuance.db");
+
   
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   

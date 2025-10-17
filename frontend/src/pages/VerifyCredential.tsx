@@ -127,12 +127,13 @@ const VerifyCredential: React.FC = () => {
           >
             {["id", "name", "email"].map((field) => (
               <div key={field} className="flex flex-col gap-1">
-                <label className="text-gray-400 text-start">
+                <label className="text-gray-400 text-start" htmlFor={field}>
                   {field.toUpperCase()} :
                 </label>
                 <input
                   type={field === "email" ? "email" : "text"}
                   name={field}
+                  id={field}
                   placeholder={field}
                   value={form[field as keyof typeof form]}
                   onChange={handleChange}

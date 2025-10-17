@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "jest", "node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -24,11 +24,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-        /* ✅ Added import alias */
+    /* ✅ Import alias */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src"]
+  "extends": "./tsconfig.json",
+  "include": ["src", "src/**/*.test.tsx","src/**/*.ts", "src/**/*.tsx"]
 }

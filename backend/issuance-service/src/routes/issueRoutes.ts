@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { issueCredential,checkCredential } from "../controller/issuanceController.ts";
+import { issueCredential,checkCredential } from "../controller/issuanceController";
 
 const router=Router() 
 

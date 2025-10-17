@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: issuance-service
+  labels:
+    app: issuance-service
+spec:
+  replicas: 2 # for scalability
+  selector:
+    matchLabels:
+      app: issuance-service
+  template:
+    metadata:
+      labels:
+        app: issuance-service
+    spec:
+      containers:
+        - name: issuance-service
+          image: issuance-service:latest  # local image
+          imagePullPolicy: Never 
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: DATABASE_URL
+              value: "/data/issuance.sqlite"
+          volumeMounts:
+            - name: issuance-data
+              mountPath: /data
+      volumes:
+        - name: issuance-data
+          emptyDir: {} # simple persistence layer; replace with PVC if needed
