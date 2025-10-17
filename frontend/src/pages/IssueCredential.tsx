@@ -46,45 +46,37 @@ const IssueCredential: React.FC = () => {
 
     try {
       const res = await issueCredential(form);
-      console.log(res.credential);
 
+      // New credential issued
       if (res.status === "issued") {
         toast.success(res.message || "Credential issued successfully!");
-      } else if (res.status === "exists") {
-        toast.warning(
-          res.message || "Credential already exists for this name and email!"
-        );
-      } else {
-        toast.info(res.message || "Unknown response from server");
-      }
-
-      if (res.status === "issued" || res.status === "exists") {
         setCredential(res.credential);
-        setWorker(res.worker || res.existing?.worker);
+        setWorker(res.worker);
+      }
+      // Handle any unexpected non-error response
+      else {
+        toast.info(res.message || "Unknown response from server");
       }
     } catch (err: any) {
       const errData = err.response?.data;
 
-        if (errData?.status === "email_conflict") {
-    toast.warning(errData.message);
-    // optionally show card
-    setCredential(errData.credential);
-    setWorker(errData.worker || errData.existing?.worker);
-  } else if (errData?.status === "exists") {
-    toast.warning(errData.message);
-    // show existing credential card
-    setCredential(errData.credential);
-    setWorker(errData.worker || errData.existing?.worker);
-  } else if (errData?.message) {
-    toast.error(errData.message);
-  } else {
-    toast.error("Failed to issue credential. Please try again.");
-  }
-      // } else if (errData?.message) {
-      //   toast.error(errData.message);
-      // } else {
-      //   toast.error("Failed to issue credential. Please try again.");
-      // }
+      // Existing credential or email conflict
+      if (errData?.status === "exists" || errData?.status === "email_conflict") {
+        toast.warning(errData.message || "Credential already exists");
+
+        // Merge credential data with issuedAt and worker from backend
+        setCredential({
+          ...errData.credential,
+          issuedAt: errData.existing?.issuedAt || errData.credential?.issuedAt,
+        });
+        setWorker(errData.worker || errData.existing?.worker);
+      }
+      // Other errors
+      else if (errData?.message) {
+        toast.error(errData.message);
+      } else {
+        toast.error("Failed to issue credential. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -119,7 +111,7 @@ const IssueCredential: React.FC = () => {
               </div>
             ))}
             <div className="text-gray-500">
-              Already issued ?
+              Already issued?
               <Link to="/verify" className="underline cursor-pointer pl-1">
                 <span className="text-green-600">Verify Now</span>
               </Link>
