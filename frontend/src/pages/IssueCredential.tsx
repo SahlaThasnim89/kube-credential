@@ -9,6 +9,7 @@ const IssueCredential: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [credential, setCredential] = useState<any>(null);
   const [worker, setWorker] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
 
   const nameRegex = /^[A-Za-z]+([ '-][A-Za-z]+)*$/;
@@ -43,41 +44,50 @@ const IssueCredential: React.FC = () => {
     if (!validateForm()) return;
     setLoading(true);
     setCredential(null);
+    setMessage("");
 
     try {
       const res = await issueCredential(form);
 
-      if (res.status === "issued") {
-        toast.success(res.message || "Credential issued successfully!");
-        setCredential(res.credential);
-        setWorker(res.worker);
+      switch (res.status) {
+        case "issued":
+          setCredential(res.credential);
+          setWorker(res.worker);
+          setMessage(res.message || "Credential issued successfully!");
+          toast.success(res.message || "Credential issued successfully!");
+          break;
+
+        case "exists":
+          setCredential(res.credential);
+          setWorker(res.existing?.worker || "worker-n");
+          setMessage(res.message || "Credential already exists");
+          toast.info(res.message || "Credential already exists");
+          break;
+
+        case "email_conflict":
+          setCredential(null);
+          setWorker("");
+          setMessage(res.message || "Email already used with another name");
+          toast.warning(res.message || "Email already used with another name");
+          break;
+
+        default:
+          setMessage("Unexpected response from server");
+          toast.error("Unexpected response from server");
       }
     } catch (err: any) {
       const errData = err.response?.data;
-
-      // Existing credential → show card
-      if (errData?.status === "exists") {
-        toast.warning(errData.message || "Credential already exists");
-        setCredential(errData.credential || errData.existing);
-        setWorker(errData.worker || errData.existing?.worker);
-      }
-      // Email conflict → toast only
-      else if (errData?.status === "email_conflict") {
-        toast.warning(errData.message || "Email already used with another name");
-        setCredential(null);
-        setWorker("");
-      } else if (errData?.message) {
-        toast.error(errData.message);
-      } else {
-        toast.error("Failed to issue credential. Please try again.");
-      }
+      setCredential(null);
+      setWorker("");
+      setMessage(errData?.message || "Failed to issue credential");
+      toast.error(errData?.message || "Failed to issue credential");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="max-w-md mx-auto p-4">
       {!credential && (
         <>
           <h2 className="text-xl font-semibold my-6 text-green-600">
@@ -121,12 +131,18 @@ const IssueCredential: React.FC = () => {
         </>
       )}
 
-      {credential && (
+      {message && (
+        <div className="mt-4 p-2 bg-gray-100 rounded text-gray-700">
+          {message}
+        </div>
+      )}
+
+      {credential && worker && (
         <CredentialCard
           id={credential.id}
           name={credential.name}
           email={credential.email}
-          worker={worker || "worker-n"}
+          worker={worker}
           issuedAt={credential.issuedAt}
         />
       )}
