@@ -52,24 +52,26 @@ const IssueCredential: React.FC = () => {
         toast.success(res.message || "Credential issued successfully!");
         setCredential(res.credential);
         setWorker(res.worker);
-      }
-      // Handle any unexpected non-error response
-      else {
+      } else {
         toast.info(res.message || "Unknown response from server");
       }
     } catch (err: any) {
       const errData = err.response?.data;
 
-      // Existing credential or email conflict
-      if (errData?.status === "exists" || errData?.status === "email_conflict") {
+      // Existing credential (same name/email) → show card
+      if (errData?.status === "exists") {
         toast.warning(errData.message || "Credential already exists");
-
-        // Merge credential data with issuedAt and worker from backend
         setCredential({
           ...errData.credential,
           issuedAt: errData.existing?.issuedAt || errData.credential?.issuedAt,
         });
         setWorker(errData.worker || errData.existing?.worker);
+      }
+      // Email conflict → toast only, no card
+      else if (errData?.status === "email_conflict") {
+        toast.warning(errData.message || "Email already used with another name");
+        setCredential(null);
+        setWorker("");
       }
       // Other errors
       else if (errData?.message) {
