@@ -47,34 +47,26 @@ const IssueCredential: React.FC = () => {
     try {
       const res = await issueCredential(form);
 
-      // New credential issued
       if (res.status === "issued") {
         toast.success(res.message || "Credential issued successfully!");
         setCredential(res.credential);
         setWorker(res.worker);
-      } else {
-        toast.info(res.message || "Unknown response from server");
       }
     } catch (err: any) {
       const errData = err.response?.data;
 
-      // Existing credential (same name/email) → show card
+      // Existing credential → show card
       if (errData?.status === "exists") {
         toast.warning(errData.message || "Credential already exists");
-        setCredential({
-          ...errData.credential,
-          issuedAt: errData.existing?.issuedAt || errData.credential?.issuedAt,
-        });
+        setCredential(errData.credential || errData.existing);
         setWorker(errData.worker || errData.existing?.worker);
       }
-      // Email conflict → toast only, no card
+      // Email conflict → toast only
       else if (errData?.status === "email_conflict") {
         toast.warning(errData.message || "Email already used with another name");
         setCredential(null);
         setWorker("");
-      }
-      // Other errors
-      else if (errData?.message) {
+      } else if (errData?.message) {
         toast.error(errData.message);
       } else {
         toast.error("Failed to issue credential. Please try again.");
